@@ -1,0 +1,122 @@
+<?php
+session_start();
+include 'conexao.php';
+
+if (!isset($_GET["codigo"])) {
+    Header("Location: erro.php");
+    $_SESSION["mensagem"] = "Parâmetro inexistente!";
+    $_SESSION["cor"] = "red";
+    die;
+}
+
+$codigo = $_REQUEST["codigo"];
+
+if ($codigo == "") {
+    Header("Location: erro.php");
+    $_SESSION["mensagem"] = "Código não pode ser vazio!";
+    $_SESSION["cor"] = "red";
+    die;
+}
+
+$Query = mysqli_query($linha_conexao, "call BuscarProduto(" . $codigo . ");");
+
+if ($Query) {
+    $produto = mysqli_fetch_assoc($Query);
+    $codigoProduto = $produto["Código"];
+
+    if ($codigoProduto == "") {
+        Header("Location: erro.php");
+        $_SESSION["mensagem"] = "Código não localizado!";
+        $_SESSION["cor"] = "red";
+        die;
+    } else {
+        $nomeProduto = $produto["Produto"];
+        $quantidadeProduto = $produto["Quantidade"];
+        $valorProduto = str_replace(["R$", " "], ["", ""], $produto["Preço"]);
+        mysqli_free_result($Query);
+        mysqli_next_result($linha_conexao);
+    }
+} else {
+    $mensagem = 'Não foi possível listar o produto!';
+    $cor = 'black';
+}
+
+if (isset($_POST["botao_editar"])) {
+
+    $codigoProduto = $_POST["id"];
+    $nomeProduto = $_POST["nome"];
+    $quantidadeProduto = $_POST["quantidade"];
+    $valorProduto = $_POST["valor"];
+    $valorProduto = str_replace([".", ","], ["", "."], $valorProduto);
+
+    $Query = mysqli_query($linha_conexao, "call EditarProduto(" . $codigoProduto . ", " . "'$nomeProduto'" . ", " . $quantidadeProduto . ", " . $valorProduto . ");");
+
+    if ($Query) {
+        Header("Location: index.php");
+        mysqli_free_result($Query);
+        mysqli_next_result($linha_conexao);
+        die;
+    } else {
+        Header("Location: erro.php");
+        $_SESSION["mensagem"] = "A edição do produto de código: " . $codigoProduto . ", nome: '" . $nomeProduto . "' não foi bem sucedida!";
+        $_SESSION["cor"] = "red";
+
+    }
+}
+
+?>
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="images\logosite.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" href="css/editar.css">
+    <title>Edição - Produto</title>
+</head>
+
+<body>
+    <section>
+
+        <div class="barra-navegacao-2">
+            <a href="index.php" class="btn-voltar-pagina">
+                <i class="fas fa-home"></i>
+                <span>Página Inicial</span>
+            </a>
+        </div>
+
+        <h1>Editar Produto</h1>
+        <form method="post" action="">
+            <div class="campo">
+                <label for="id">ID:</label>
+                <input type="number" id="id" name="id" value="<?php echo $codigoProduto ?>" readonly>
+            </div>
+
+            <div class="campo">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" name="nome" maxlength="255" required value="<?php echo $nomeProduto ?>">
+            </div>
+
+            <div class="campo">
+                <label for="quantidade">Quantidade:</label>
+                <input type="number" id="quantidade" name="quantidade" min="0" required
+                    value="<?php echo $quantidadeProduto ?>">
+            </div>
+
+            <div class="campo">
+                <label for="valor">Valor (R$):</label>
+                <input type="text" id="valor" name="valor" required value="<?php echo $valorProduto ?>">
+            </div>
+
+            <button id="botaoEditar" type="submit" name="botao_editar">Salvar</button>
+        </form>
+    </section>
+
+    <script src="js/editar_adicionar.js"></script>
+</body>
+
+</html>
