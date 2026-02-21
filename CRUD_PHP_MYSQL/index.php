@@ -21,7 +21,7 @@ $Query = mysqli_query($linha_conexao, "call ListarProdutos();");
 <body>
     <section>
         <header class="divAdicionar">
-            <h1>Tabela de Preços</h1>
+            <h1>Tabela de Produtos</h1>
 
             <a href="adicionar.php">
                 <i class="fa-solid fa-plus"></i> Adicionar
@@ -97,5 +97,6 @@ $Query = mysqli_query($linha_conexao, "call ListarProdutos();");
 
     <script src="js/index.js"></script>
 </body>
+
 
 </html>
